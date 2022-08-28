@@ -67,7 +67,7 @@ get_madden_ratings <- function(edition = 23, update = FALSE){
     dplyr::select(
       name = full_name_for_search, team_abbr, position, position_group,
       archetype, overall_rating, age, height, weight, iteration,
-      tidyselect::everything()
+      dplyr::everything()
     )
   
   # combine with previous scrape
