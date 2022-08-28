@@ -13,9 +13,4 @@ jobs:
       - name: Install packages
         run: Rscript -e 'install.packages(c("nflfastR","dplyr","jsonlite","janitor","readr"))'
       - name: Update ratings data
-        env:
-          NFL_API_KEY: ${{ secrets.NFL_API_KEY }}
-          NFL_API_SECRET: ${{ secrets.NFL_API_SECRET }}
-          NFL_ACCESS_TOKEN: ${{ secrets.NFL_ACCESS_TOKEN }}
-          NFL_ACCESS_TOKEN_SECRET: ${{ secrets.NFL_ACCESS_TOKEN_SECRET }}
         run: Rscript madden/update_madden_raings.R
