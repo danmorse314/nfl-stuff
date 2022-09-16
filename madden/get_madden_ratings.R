@@ -73,9 +73,9 @@ get_madden_ratings <- function(edition = 23, update = FALSE){
   # combine with previous scrape
   if(update == TRUE){
     ratings <- dplyr::bind_rows(
+        ratings,
         readr::read_csv("madden/madden_23_player_ratings.csv",
-                        col_types = readr::cols()),
-      ratings
+                        col_types = readr::cols())
       ) |>
       # remove duplicates - incase scraping ratings that haven't changed
       # change will show up under the 'iteration' column
