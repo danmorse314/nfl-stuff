@@ -2,7 +2,7 @@ name: madden_ratings_update
 
 on:
   schedule:
-      - cron: '0 15 * * *'
+      - cron: '0 16 * * *'
 
 jobs:
   update_ratings:
