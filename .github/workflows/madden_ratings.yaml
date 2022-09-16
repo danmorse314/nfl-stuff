@@ -2,7 +2,7 @@ name: madden_ratings_update
 
 on:
   schedule:
-      - cron: '0 0 * * *'
+      - cron: '0 15 * * *'
 
 jobs:
   update_ratings:
@@ -13,10 +13,10 @@ jobs:
       - name: Install packages
         run: Rscript -e 'install.packages(c("nflfastR","dplyr","jsonlite","janitor","readr"))'
       - name: Update ratings data
-        env:
-          GITHUB_PAT: ${{ secrets.PAT_GITHUB }}
         run: Rscript madden/update_madden_ratings.R
       - name: Updating last commit
+        env:
+          GITHUB_PAT: ${{ secrets.PAT_GITHUB }}
         run: |
           git config --global user.name "update_madden[bot]"
           git config --global user.email "udpate-madden-github-actions@users.noreply.github.com"
