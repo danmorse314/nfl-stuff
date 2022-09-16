@@ -13,4 +13,12 @@ jobs:
       - name: Install packages
         run: Rscript -e 'install.packages(c("nflfastR","dplyr","jsonlite","janitor","readr"))'
       - name: Update ratings data
+        env:
+          GITHUB_PAT: ${{ secrets.PAT_GITHUB }}
         run: Rscript madden/update_madden_ratings.R
+      - name: Updating last commit
+        run: |
+          git config --global user.name "update_madden[bot]"
+          git config --global user.email "udpate-madden-github-actions@users.noreply.github.com"
+          git commit -a -m "Updated Madden Ratings"
+          git push origin
