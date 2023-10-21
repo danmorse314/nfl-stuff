@@ -11,7 +11,7 @@ sl_conn <- ffscrapr::sleeper_connect(
 # run season simulations
 sl_sim <- ffsimulator::ff_simulate(
   conn = sl_conn,
-  n_seasons = 10000,
+  n_seasons = 1000,
   actual_schedule = TRUE,
   pos_filter = c("QB","RB","WR","TE"),
   seed = 48
