@@ -1,0 +1,25 @@
+name: ff_sim_update
+
+on:
+  push
+  #schedule:
+  #    - cron: '0 3 * * *'
+
+jobs:
+  run_sims:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - name: Install packages
+        run: Rscript -e 'install.packages(c("ffscrapr","ffsimulator"))'
+      - name: Update simulation results
+        env:
+          GITHUB_PAT: ${{ secrets.PAT_GITHUB }}
+        run: Rscript ff/update_ff_sim.R
+      - name: Commit and update repo
+        run: |
+          git config --global user.name "ff-sim-github-actions[bot]"
+          git config --global user.email "ff-sim-github-actions@users.noreply.github.com"
+          git add -A && git commit -a -m "Updated season simulation data"
+          git push origin
