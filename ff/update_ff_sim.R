@@ -17,5 +17,9 @@ sl_sim <- ffsimulator::ff_simulate(
   seed = 48
 )
 
+# get roster user names and team names
+user_names <- ffsimulator::ffs_franchises(sl_conn)
+
 # save
 sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
+user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
