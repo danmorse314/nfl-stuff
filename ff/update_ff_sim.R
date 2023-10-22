@@ -109,8 +109,30 @@ proj.year <- proj.year |>
   mutate(playoff_odds = mean(playoffs)) |>
   ungroup()
 
+# weekly sims
+proj.week <- sl_sim$summary_week |>
+  left_join(user_names, by = "franchise_id") |>
+  mutate(
+    user_franchise = glue::glue("{user_name} ({franchise_name})"),
+    point_diff = team_score - opponent_score,
+    sims = max(season)
+  ) |>
+  group_by(week, user_franchise) |>
+  mutate(
+    mean_pf = round(mean(team_score)),
+    mean_pa = round(mean(opponent_score)),
+    mean_pd = round(mean(point_diff)),
+    wp_raw = sum(result == 'W') / sims,
+    opp_wp_raw = 1 - wp_raw,
+    wp = glue::glue("{round(100*wp_raw)}%"),
+    opp_wp = glue::glue("{round(100*opp_wp_raw)}%")
+  ) |>
+  ungroup()
+
 # save
 sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
+proj.year |> saveRDS(paste0("ff/season_simulation_yearly_",year,".rds"))
+proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
 user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
 rosters |> saveRDS(paste0("ff/rosters_",year,".rds"))
 current |> saveRDS(paste0("ff/standings_",year,".rds"))
