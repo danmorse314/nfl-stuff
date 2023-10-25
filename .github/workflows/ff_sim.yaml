@@ -2,7 +2,7 @@ name: ff_sim_update
 
 on:
   schedule:
-      - cron: '0 5 * * *'
+      - cron: '0 5,17 * * *'
 
 jobs:
   run_sims:
