@@ -52,7 +52,7 @@ if(nrow(trans) > 0){
     mutate(
       pick_name = ifelse(!is.na(pick_user), glue::glue("{player_name} ({pick_user})"), NA_character_)
     ) |>
-    select(timestamp:franchise_name, user_name, player_name, pick_name, pos:comment) |>
+    select(timestamp:franchise_name, user_name, player_id, player_name, pick_name, pos:comment) |>
     # add back to old logs
     bind_rows(trans.old) |>
     arrange(desc(timestamp))
