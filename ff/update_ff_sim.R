@@ -11,6 +11,51 @@ sl_conn <- ffscrapr::sleeper_connect(
 
 # get user names and team names
 user_names <- ffsimulator::ffs_franchises(sl_conn) |>
+  mutate(user_franchise = glue::glue("{user_name} ({franchise_name})"))
+
+# get transactions
+
+# load prior transaction logs
+#   this will be helpful in january once the year changes so we can combine prior years with new years all in one dataset
+#trans.old <- readRDS(url("https://github.com/danmorse314/nfl-stuff/raw/main/ff/transaction_log.rds"))
+
+trans <- ffscrapr::ff_transactions(sl_conn) |>
+  #filter(timestamp > max(trans.old$timestamp)) |>
+  left_join(
+    user_names |>
+      select(franchise_id, user_name),
+    by = "franchise_id"
+  )
+
+trans.clean <- trans |>
+  mutate(pick_id = ifelse(nchar(player_id) > 6, player_id, NA_character_)) |>
+  tidyr::separate(
+    pick_id, into = c("pick_year","axe1","pick_round","axe2","axe3","axe4","pick_franchise"),
+    sep = "_"
+  ) |>
+  mutate(
+    player_name = case_when(
+      !is.na(player_name) ~ player_name,
+      pick_round == 1 ~ glue::glue("1st Round ({pick_year})"),
+      pick_round == 2 ~ glue::glue("2nd Round ({pick_year})"),
+      pick_round == 3 ~ glue::glue("3rd Round ({pick_year})"),
+      pick_round == 4 ~ glue::glue("4th Round ({pick_year})"),
+    )
+  ) |>
+  left_join(
+    user_names |>
+      select(pick_franchise = franchise_id, pick_user = user_name),
+    by = "pick_franchise"
+  ) |>
+  mutate(
+    pick_name = ifelse(!is.na(pick_user), glue::glue("{player_name} ({pick_user})"), NA_character_)
+  ) |>
+  select(timestamp:franchise_name, user_name, player_name, pick_name, pos:comment) |>
+  # add back to old logs
+  #bind_rows(trans.old) |>
+  arrange(desc(timestamp))
+
+user_names <- user_names |>
   select(franchise_id, user_name)
 
 # get current rosters
@@ -136,3 +181,4 @@ proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
 user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
 rosters |> saveRDS(paste0("ff/rosters_",year,".rds"))
 current |> saveRDS(paste0("ff/standings_",year,".rds"))
+trans.clean |> saveRDS("ff/transaction_log.rds")
