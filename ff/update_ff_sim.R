@@ -157,7 +157,8 @@ proj.year <- proj.year |>
   ungroup() |>
   group_by(user_franchise) |>
   mutate(playoff_odds = mean(playoffs)) |>
-  ungroup()
+  ungroup() |>
+  mutate(dtupdated = Sys.time())
 
 # weekly sims
 proj.week <- sl_sim$summary_week |>
@@ -177,7 +178,8 @@ proj.week <- sl_sim$summary_week |>
     wp = glue::glue("{round(100*wp_raw)}%"),
     opp_wp = glue::glue("{round(100*opp_wp_raw)}%")
   ) |>
-  ungroup()
+  ungroup() |>
+  mutate(dtupdated = Sys.time())
 
 # save
 sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
