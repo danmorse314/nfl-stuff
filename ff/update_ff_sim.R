@@ -183,6 +183,9 @@ if(!is.null(sl_sim$summary_season)){
     ) |>
     ungroup() |>
     mutate(dtupdated = Sys.time())
+  
+  proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
+  
 } else {
   # season is over, use final standings
   
@@ -216,15 +219,11 @@ if(!is.null(sl_sim$summary_season)){
       current_record, mean_wins, playoff_odds, bye_odds,
       mean_pf, mean_pa, mean_pd, mean_potential, efficiency
     )
-  
-  proj.week <- readRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
-  
 }
 
 # save
 sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
 proj.year |> saveRDS(paste0("ff/season_simulation_yearly_",year,".rds"))
-proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
 user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
 rosters |> saveRDS(paste0("ff/rosters_",year,".rds"))
 current |> saveRDS(paste0("ff/standings_",year,".rds"))
