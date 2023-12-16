@@ -85,6 +85,10 @@ sl_sim <- ffsimulator::ff_simulate(
 
 # check if we need to simulate or if the season is over
 if(!is.null(sl_sim$summary_season)){
+  
+  # save sim
+  sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
+  
   # season projections
   if(!is.null(current)){
     
@@ -222,7 +226,6 @@ if(!is.null(sl_sim$summary_season)){
 }
 
 # save
-sl_sim |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
 proj.year |> saveRDS(paste0("ff/season_simulation_yearly_",year,".rds"))
 user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
 rosters |> saveRDS(paste0("ff/rosters_",year,".rds"))
