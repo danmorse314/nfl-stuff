@@ -194,7 +194,7 @@ if(!is.null(sl_sim$summary_season)){
   # season is over, use final standings
   
   proj.year <- current |>
-    arrange(-h2h_wins, points_for) |>
+    arrange(-h2h_wins, -points_for) |>
     mutate(
       place.c = row_number(),
       proj.place = place.c,
