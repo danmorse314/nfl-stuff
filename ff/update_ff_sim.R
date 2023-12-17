@@ -203,7 +203,7 @@ if(!is.null(sl_sim$summary_season)){
         between(place.c, 3, 6) ~ "x",
         TRUE ~ "e"
       ),
-      current_record = ifelse(is_ties,glue::glue("{h2h_wins}-{h2h_losses}-{h2h_ties}"), glue::glue("{h2h_wins}-{h2h_losses}")),
+      current_record = glue::glue("{h2h_wins}-{h2h_losses}"),
       mean_wins = h2h_wins,
       playoff_odds = ifelse(place.c <= 6, 1, 0),
       bye_odds = ifelse(place.c <= 2, 1, 0),
