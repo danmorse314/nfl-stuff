@@ -1,3 +1,7 @@
+# install packages
+install.packages(c("ffscrapr","remotes","dplyr"))
+remotes::install_github("ffverse/ffsimulator")
+
 # run dynasty league simulations
 library(dplyr)
 

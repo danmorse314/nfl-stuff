@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v2
-      - name: Install packages
-        run: Rscript -e 'install.packages(c("ffscrapr","remotes","dplyr"))
-                         remotes::install_github("ffverse/ffsimulator")'
       - name: Update simulation results
         env:
           GITHUB_PAT: ${{ secrets.PAT_GITHUB }}
