@@ -8,6 +8,9 @@ library(dplyr)
 # get current year
 year <- as.numeric(substr(Sys.Date(),1,4))
 
+# sims to run
+nsims <- 1000
+
 # league ID
 #lid <- "999807305069699072"  # 2023
 lid <- "1073536596231753728" # 2024
@@ -88,7 +91,7 @@ is_ties <- sum(current$h2h_ties) > 0
 # run season simulations
 sl_sim <- ffsimulator::ff_simulate(
   conn = sl_conn,
-  n_seasons = 1000,
+  n_seasons = nsims,
   #actual_schedule = TRUE,
   pos_filter = c("QB","RB","WR","TE"),
   seed = 48
@@ -109,7 +112,7 @@ if(!is.null(sl_sim$summary_season)){
   # season projections
   if(!is.null(current)){
     
-    proj.year <- sl_sim$summary_season |>
+    proj.year.raw <- sl_sim$summary_season |>
       left_join(
         current |>
           group_by(franchise_name) |>
@@ -136,9 +139,8 @@ if(!is.null(sl_sim$summary_season)){
     
   } else {
     
-    proj.year <- sl_sim$summary_season |>
+    proj.year.raw <- sl_sim$summary_season |>
       mutate(
-        place.c = row_number(),
         current_record = "0-0",
         wins.c = 0,
         pf.c = 0,
@@ -148,7 +150,7 @@ if(!is.null(sl_sim$summary_season)){
     
   }
   
-  proj.year <- proj.year |>
+  proj.year.raw <- proj.year.raw |>
     left_join(user_names, by = "franchise_id")  |>
     mutate(
       h2h_wins = h2h_wins + wins.c,
@@ -159,7 +161,8 @@ if(!is.null(sl_sim$summary_season)){
       point_diff = points_for - points_against
     )
   
-  proj.year <- proj.year |>
+  # old code that I don't wanna delete
+  proj.year.old <- proj.year.raw |>
     group_by(user_franchise) |>
     mutate(
       mean_pf = round(mean(points_for)),
@@ -184,6 +187,42 @@ if(!is.null(sl_sim$summary_season)){
     ungroup() |>
     mutate(dtupdated = Sys.time())
   
+  # new season sims
+  proj.year <- proj.year.raw |>
+    group_by(season) |>
+    arrange(-h2h_wins, -points_for) |>
+    mutate(place = row_number(),
+           playoffs = ifelse(place <= 6, 1, 0),
+           bye = ifelse(place <= 2, 1, 0)) |>
+    ungroup() |>
+    group_by(user_name, franchise_name, current_record, pot.c, wins.c, pf.c) |>
+    summarise(
+      mean_pf = round(mean(points_for)),
+      mean_pa = round(mean(points_against)),
+      mean_pd = round(mean(point_diff)),
+      mean_wins = round(mean(h2h_wins),1),
+      mean_losses = 14 - mean_wins,
+      median_wins = median(h2h_wins),
+      median_losses = 14-median_wins,
+      proj.record = glue::glue("{sprintf('%.1f', mean_wins)} - {sprintf('%.1f', mean_losses)}"),
+      mean_potential = round(mean(potential_points)),
+      playoff_odds = mean(playoffs),
+      bye_odds = mean(bye),
+      sims = max(season),
+      .groups = "drop"
+    ) |>
+    arrange(-mean_wins, -mean_pf) |>
+    mutate(place.c = row_number()) |>
+    ungroup() |>
+    select(
+      place.c, user_name, franchise_name, current_record, proj.record,
+      mean_wins, median_wins, playoff_odds, bye_odds, mean_pf, mean_pa,
+      mean_pd, mean_potential, pot.c,
+      # for clinching
+      wins.c, pf.c, place.c
+    ) |>
+    mutate(dtupdated = Sys.time())
+  
   # weekly sims
   proj.week <- sl_sim$summary_week |>
     left_join(user_names, by = "franchise_id") |>
@@ -192,15 +231,16 @@ if(!is.null(sl_sim$summary_season)){
       point_diff = team_score - opponent_score,
       sims = max(season)
     ) |>
-    group_by(week, user_franchise) |>
-    mutate(
+    group_by(week, user_name, franchise_name, user_franchise, opponent_name) |>
+    summarise(
       mean_pf = round(mean(team_score)),
       mean_pa = round(mean(opponent_score)),
       mean_pd = round(mean(point_diff)),
-      wp_raw = sum(result == 'W') / sims,
+      wp_raw = sum(result == 'W') / max(sims),
       opp_wp_raw = 1 - wp_raw,
       wp = glue::glue("{round(100*wp_raw)}%"),
-      opp_wp = glue::glue("{round(100*opp_wp_raw)}%")
+      opp_wp = glue::glue("{round(100*opp_wp_raw)}%"),
+      .groups = "drop"
     ) |>
     ungroup() |>
     mutate(dtupdated = Sys.time())
