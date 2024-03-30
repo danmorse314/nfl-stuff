@@ -138,7 +138,7 @@ if(!is.null(sl_sim$summary_season)){
     
     proj.year <- sl_sim$summary_season |>
       mutate(
-        place.c = 1,
+        place.c = row_number(),
         current_record = "0-0",
         wins.c = 0,
         pf.c = 0,
