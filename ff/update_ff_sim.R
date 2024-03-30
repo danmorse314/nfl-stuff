@@ -8,9 +8,13 @@ library(dplyr)
 # get current year
 year <- as.numeric(substr(Sys.Date(),1,4))
 
+# league ID
+#lid <- "999807305069699072"  # 2023
+lid <- "1073536596231753728" # 2024
+
 # connect to sleeper
 sl_conn <- ffscrapr::sleeper_connect(
-  season = year, league_id = "999807305069699072"
+  season = year, league_id = lid
 )
 
 # get user names and team names
@@ -56,7 +60,7 @@ if(nrow(trans) > 0){
     mutate(
       pick_name = ifelse(!is.na(pick_user), glue::glue("{player_name} ({pick_user})"), NA_character_)
     ) |>
-    select(timestamp:franchise_name, user_name, sleeper_id = player_id, player_name, pick_name, pos:comment) |>
+    select(timestamp:franchise_name, user_name, sleeper_id = player_id, player_name, pick_name, pos, everything()) |>
     # add back to old logs
     bind_rows(trans.old) |>
     arrange(desc(timestamp))
@@ -73,7 +77,10 @@ rosters <- ffscrapr::ff_rosters(sl_conn) |>
   mutate(user_franchise = glue::glue("{user_name} ({franchise_name})"))
 
 # get standings
-current <- ffscrapr::ff_standings(sl_conn)
+ff_st_safe <- purrr::safely(~ffscrapr::ff_standings(sl_conn))
+current <- ff_st_safe()
+
+current <- current$result
 
 # check if there's been a tie
 is_ties <- sum(current$h2h_ties) > 0
@@ -82,7 +89,7 @@ is_ties <- sum(current$h2h_ties) > 0
 sl_sim <- ffsimulator::ff_simulate(
   conn = sl_conn,
   n_seasons = 1000,
-  actual_schedule = TRUE,
+  #actual_schedule = TRUE,
   pos_filter = c("QB","RB","WR","TE"),
   seed = 48
 )
@@ -123,7 +130,7 @@ if(!is.null(sl_sim$summary_season)){
     
   } else {
     
-    proj.year <- league_proj$summary_season |>
+    proj.year <- sl_sim$summary_season |>
       mutate(
         place.c = 1,
         current_record = "0-0",
