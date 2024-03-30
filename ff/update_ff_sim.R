@@ -219,7 +219,7 @@ if(!is.null(sl_sim$summary_season)){
       mean_wins, median_wins, playoff_odds, bye_odds, mean_pf, mean_pa,
       mean_pd, mean_potential, pot.c,
       # for clinching
-      wins.c, pf.c, place.c
+      wins.c, pf.c, place.c, sims
     ) |>
     mutate(dtupdated = Sys.time())
   
