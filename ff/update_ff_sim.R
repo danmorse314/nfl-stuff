@@ -103,6 +103,8 @@ if(classic_sim){
   
   seed <- 48
   
+  set.seed(seed)
+  
   year.is <- ifelse(
     between(as.numeric(substr(Sys.Date(), 6,7)), 3, 9),
     year - 1,
@@ -129,7 +131,7 @@ if(classic_sim){
     filter(position %in% c("QB","RB","TE","WR"))
   
   rosters_rl <- rosters |>
-    rename(sleeper_id = player_id) |>
+    mutate(sleeper_id = player_id) |>
     inner_join(
       fp_ids |>
         select(sleeper_id, fantasypros_id),
