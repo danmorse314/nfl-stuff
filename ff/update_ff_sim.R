@@ -89,23 +89,114 @@ current <- current$result
 is_ties <- sum(current$h2h_ties) > 0
 
 # run season simulations
-sl_sim <- ffsimulator::ff_simulate(
-  conn = sl_conn,
-  n_seasons = nsims,
-  #actual_schedule = TRUE,
-  pos_filter = c("QB","RB","WR","TE"),
-  seed = 48
-)
+classic_sim <- FALSE
+if(classic_sim){
+  sl_sim <- ffsimulator::ff_simulate(
+    conn = sl_conn,
+    n_seasons = nsims,
+    #actual_schedule = TRUE,
+    pos_filter = c("QB","RB","WR","TE"),
+    seed = 48
+  )
+} else {
+  library(ffsimulator)
+  
+  seed <- 48
+  
+  year.is <- ifelse(
+    between(as.numeric(substr(Sys.Date(), 6,7)), 3, 9),
+    year - 1,
+    year
+  )
+  
+  franchises <- ffsimulator::ffs_franchises(sl_conn) |>
+    mutate(user_franchise = glue::glue("{user_name} ({franchise_name})"))
+  
+  scoring_history <- ffscrapr::ff_scoringhistory(sl_conn, 2012:year.is)
+  
+  latest_rankings <- ffsimulator::ffs_latest_rankings(type = "draft") |>
+    filter(pos %in% c("QB","RB","WR","TE"))
+  
+  lineup_constraints <- ffsimulator::ffs_starter_positions(sl_conn)
+  
+  adp_outcomes <- ffsimulator::ffs_adp_outcomes(
+    scoring_history = scoring_history,
+    gp_model = "simple", # or "none"
+    pos_filter = c("QB","RB","WR","TE")
+  )
+  
+  fp_ids <- readRDS(url("https://github.com/dynastyprocess/data/raw/master/files/db_playerids.rds")) |>
+    filter(position %in% c("QB","RB","TE","WR"))
+  
+  rosters_rl <- rosters |>
+    rename(sleeper_id = player_id) |>
+    inner_join(
+      fp_ids |>
+        select(sleeper_id, fantasypros_id),
+      by = "sleeper_id"
+    ) |>
+    mutate(league_id = lid) |>
+    ffs_add_replacement_level(
+      latest_rankings = latest_rankings,
+      franchises = franchises,
+      lineup_constraints = lineup_constraints,
+      pos_filter = c("QB","RB","WR","TE")
+    )
+  
+  projected_scores <- ffs_generate_projections(
+    adp_outcomes = adp_outcomes,
+    latest_rankings = latest_rankings,
+    n_seasons = 1000, # number of seasons
+    weeks = 1:14, # specifies which weeks to generate projections for
+    rosters = rosters_rl # optional, reduces the sample to just rostered players
+  )
+  
+  roster_scores <- ffs_score_rosters(
+    projected_scores = projected_scores,
+    rosters = rosters_rl
+  )
+  
+  optimal_scores <- ffs_optimise_lineups(
+    roster_scores = roster_scores,
+    lineup_constraints = lineup_constraints,
+    lineup_efficiency_mean = 0.775,
+    lineup_efficiency_sd = 0.05,
+    best_ball = FALSE,
+    pos_filter = c("QB","RB","WR","TE")
+  )
+  
+  schedules <- ffs_build_schedules(
+    n_seasons = 1000,
+    n_weeks = 14,
+    seed = seed,
+    franchises = franchises
+  )
+  
+  summary_week <- ffs_summarise_week(optimal_scores, schedules)
+  summary_season <- ffs_summarise_season(summary_week)
+  summary_simulation <- ffs_summarise_simulation(summary_season)
+  
+  sl_sim <- list(
+    summary_week = summary_week,
+    summary_season = summary_season,
+    summary_simulation = summary_simulation
+  )
+}
+
 
 # check if we need to simulate or if the season is over
 if(!is.null(sl_sim$summary_season)){
   
   # save sims
-  sl_sim_save <- list(
-    summary_simulation = sl_sim$summary_simulation,
-    league_info = sl_sim$league_info,
-    simulation_params = sl_sim$simulation_params
-  )
+  if(!is.null(sl_sim$league_info)){
+    sl_sim_save <- list(
+      summary_simulation = sl_sim$summary_simulation,
+      league_info = sl_sim$league_info,
+      simulation_params = sl_sim$simulation_params
+    )
+  } else {
+    sl_sim_save <- list(summary_simulation = sl_sim$summary_simulation)
+  }
   
   sl_sim_save |> saveRDS(paste0("ff/season_simulation_",year,".rds"))
   
