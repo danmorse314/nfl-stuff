@@ -167,12 +167,20 @@ if(classic_sim){
     pos_filter = c("QB","RB","WR","TE")
   )
   
-  schedules <- ffs_build_schedules(
-    n_seasons = 1000,
-    n_weeks = 14,
-    seed = seed,
-    franchises = franchises
-  )
+  actual_schedule <- TRUE
+  if(actual_schedule) {
+    schedules <- ffs_schedule(sl_conn)
+    
+    schedules <- ffs_repeat_schedules(n_seasons = 1000,
+                                      actual_schedule = schedule)
+  } else {
+    schedules <- ffs_build_schedules(
+      n_seasons = 1000,
+      n_weeks = 14,
+      seed = seed,
+      franchises = franchises
+    )
+  }
   
   summary_week <- ffs_summarise_week(optimal_scores, schedules)
   summary_season <- ffs_summarise_season(summary_week)
@@ -216,7 +224,9 @@ if(!is.null(sl_sim$summary_season)){
           ungroup() |>
           arrange(-h2h_wins, -points_for) |>
           mutate(
-            place.c = row_number()
+            place.c = row_number(),
+            across(c(points_for,points_against,potential_points),
+                   ~ifelse(is.na(.x), 0, .x))
           ) |>
           select(
             franchise_id,
