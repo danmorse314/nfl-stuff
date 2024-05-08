@@ -11,6 +11,9 @@ year <- as.numeric(substr(Sys.Date(),1,4))
 # sims to run
 nsims <- 1000
 
+# are schedules released for the sim year?
+actual_schedule <- TRUE
+
 # league ID
 #lid <- "999807305069699072"  # 2023
 lid <- "1073536596231753728" # 2024
@@ -167,12 +170,11 @@ if(classic_sim){
     pos_filter = c("QB","RB","WR","TE")
   )
   
-  actual_schedule <- TRUE
   if(actual_schedule) {
     schedules <- ffs_schedule(sl_conn)
     
     schedules <- ffs_repeat_schedules(n_seasons = 1000,
-                                      actual_schedule = schedule)
+                                      actual_schedule = schedules)
   } else {
     schedules <- ffs_build_schedules(
       n_seasons = 1000,
