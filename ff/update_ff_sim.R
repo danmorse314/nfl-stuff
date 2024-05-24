@@ -18,6 +18,9 @@ actual_schedule <- TRUE
 #lid <- "999807305069699072"  # 2023
 lid <- "1073536596231753728" # 2024
 
+# keep trade cut values
+#source("update_ktc_values.R")
+
 # connect to sleeper
 sl_conn <- ffscrapr::sleeper_connect(
   season = year, league_id = lid
