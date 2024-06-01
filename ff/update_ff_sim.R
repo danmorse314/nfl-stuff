@@ -403,9 +403,14 @@ if(!is.null(sl_sim$summary_season)){
     )
 }
 
+# save projections as longitudinal data
+proj.year.total <- readRDS(paste0("ff/season_simulation_yearly_",year,"_long.rds")) |>
+  bind_rows(proj.year)
+
 # save
 proj.year |> saveRDS(paste0("ff/season_simulation_yearly_",year,".rds"))
 user_names |> saveRDS(paste0("ff/franchises_",year,".rds"))
 rosters |> saveRDS(paste0("ff/rosters_",year,".rds"))
 current |> saveRDS(paste0("ff/standings_",year,".rds"))
 trans.clean |> saveRDS("ff/transaction_log.rds")
+proj.year.total |> saveRDS(paste0("ff/season_simulation_yearly_",year,"_long.rds"))
