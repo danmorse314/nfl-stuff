@@ -85,6 +85,19 @@ rosters <- ffscrapr::ff_rosters(sl_conn) |>
   left_join(user_names, by = "franchise_id") |>
   mutate(user_franchise = glue::glue("{user_name} ({franchise_name})"))
 
+# get taxi squad
+taxi_squad <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$league_id}/rosters")) %>%
+  purrr::pluck("content") %>%
+  tibble::tibble() |>
+  tidyr::unnest_wider(1) |>
+  dplyr::select(player_id = taxi) |>
+  tidyr::unnest_longer(player_id) |>
+  dplyr::mutate(taxi = 1)
+
+rosters <- rosters |>
+  dplyr::left_join(taxi_squad, by = "player_id") |>
+  dplyr::mutate(taxi = ifelse(is.na(taxi), 0, taxi))
+
 # get standings
 ff_st_safe <- purrr::safely(~ffscrapr::ff_standings(sl_conn))
 current <- ff_st_safe()
