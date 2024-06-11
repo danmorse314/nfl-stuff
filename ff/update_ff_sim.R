@@ -94,9 +94,20 @@ taxi_squad <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$league_i
   tidyr::unnest_longer(player_id) |>
   dplyr::mutate(taxi = 1)
 
+# get IR players
+injured_reserve <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$league_id}/rosters")) %>%
+  purrr::pluck("content") %>%
+  tibble::tibble() |>
+  tidyr::unnest_wider(1) |>
+  dplyr::select(player_id = reserve) |>
+  tidyr::unnest_longer(player_id) |>
+  dplyr::mutate(ir = 1)
+
 rosters <- rosters |>
   dplyr::left_join(taxi_squad, by = "player_id") |>
-  dplyr::mutate(taxi = ifelse(is.na(taxi), 0, taxi))
+  dplyr::left_join(injured_reserve, by = "player_id") |>
+  dplyr::mutate(taxi = ifelse(is.na(taxi), 0, taxi),
+                ir   = ifelse(is.na(ir),   0, ir))
 
 # get standings
 ff_st_safe <- purrr::safely(~ffscrapr::ff_standings(sl_conn))
