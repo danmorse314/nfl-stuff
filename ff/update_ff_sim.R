@@ -365,9 +365,9 @@ if(!is.null(sl_sim$summary_season)){
     ) |>
     group_by(week, user_name, franchise_name, user_franchise, opponent_name) |>
     summarise(
-      mean_pf = round(mean(team_score)),
-      mean_pa = round(mean(opponent_score)),
-      mean_pd = round(mean(point_diff)),
+      mean_pf = round(mean(team_score),2),
+      mean_pa = round(mean(opponent_score),2),
+      mean_pd = round(mean(point_diff),2),
       wp_raw = sum(result == 'W') / max(sims),
       opp_wp_raw = 1 - wp_raw,
       wp = glue::glue("{round(100*wp_raw)}%"),
