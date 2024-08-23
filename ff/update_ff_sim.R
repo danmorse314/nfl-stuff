@@ -375,7 +375,7 @@ if(!is.null(sl_sim$summary_season)){
       .groups = "drop"
     ) |>
     ungroup() |>
-    mutate(dtupdated = Sys.time())
+    mutate(dtupdated = Sys.time(), season = year)
   
   proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
   
