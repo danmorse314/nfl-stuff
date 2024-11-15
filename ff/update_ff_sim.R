@@ -340,16 +340,28 @@ if(!is.null(sl_sim$summary_season)){
       mean_potential = round(mean(potential_points)),
       playoff_odds = mean(playoffs),
       bye_odds = mean(bye),
+      pick_1_odds = mean(place == 12),
+      pick_2_odds = mean(place == 11),
+      pick_3_odds = mean(place == 10),
+      pick_4_odds = mean(place == 9),
+      pick_5_odds = mean(place == 8),
+      pick_6_odds = mean(place == 7),
+      pick_7_odds = mean(place == 6),
+      pick_8_odds = mean(place == 5),
+      pick_9_odds = mean(place == 4),
+      pick_10_odds = mean(place == 3),
+      pick_11_odds = mean(place == 2),
+      pick_12_odds = mean(place == 1),
       sims = max(season),
       .groups = "drop"
     ) |>
     arrange(-mean_wins, -mean_pf) |>
     mutate(place.c = row_number()) |>
-    ungroup() |>
     select(
       place.c, user_name, franchise_name, current_record, proj.record,
       mean_wins, median_wins, playoff_odds, bye_odds, mean_pf, mean_pa,
       mean_pd, mean_potential, pot.c,
+      starts_with("pick_"),
       # for clinching
       wins.c, pf.c, place.c, sims
     ) |>
