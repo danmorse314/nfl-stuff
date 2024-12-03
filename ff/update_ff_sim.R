@@ -355,7 +355,7 @@ if(!is.null(sl_sim$summary_season)){
       sims = max(season),
       .groups = "drop"
     ) |>
-    arrange(-mean_wins, -mean_pf) |>
+    arrange(-wins.c, -pf.c) |>
     mutate(place.c = row_number()) |>
     select(
       place.c, user_name, franchise_name, current_record, proj.record,
