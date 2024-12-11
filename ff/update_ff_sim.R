@@ -200,8 +200,13 @@ if(classic_sim){
   if(actual_schedule) {
     schedules <- ffs_schedule(sl_conn)
     
-    schedules <- ffs_repeat_schedules(n_seasons = 1000,
-                                      actual_schedule = schedules)
+    if(nrow(schedules) > 0){
+      schedules <- ffs_repeat_schedules(n_seasons = 1000,
+                                        actual_schedule = schedules)
+    } else {
+      message("\nregular season over")
+    }
+    
   } else {
     schedules <- ffs_build_schedules(
       n_seasons = 1000,
@@ -211,9 +216,38 @@ if(classic_sim){
     )
   }
   
-  summary_week <- ffs_summarise_week(optimal_scores, schedules)
-  summary_season <- ffs_summarise_season(summary_week)
-  summary_simulation <- ffs_summarise_simulation(summary_season)
+  if(nrow(schedules) > 0){
+    summary_week <- ffs_summarise_week(optimal_scores, schedules)
+    summary_season <- ffs_summarise_season(summary_week)
+    summary_simulation <- ffs_summarise_simulation(summary_season)
+  } else {
+    summary_season <- current |>
+      mutate(
+        season = 1,
+        league_id = lid,
+        allplay_games = allplay_wins + allplay_losses,
+        franchise_id = as.character(franchise_id),
+        across(
+          c(h2h_wins, h2h_winpct, points_for, points_against, potential_points,
+            allplay_wins, allplay_games, allplay_winpct),
+          ~0
+        )
+      ) |>
+      select(
+        season,
+        league_id,
+        franchise_id,
+        franchise_name,
+        h2h_wins,
+        h2h_winpct,
+        allplay_wins,
+        allplay_games,
+        allplay_winpct,
+        points_for,
+        points_against,
+        potential_points
+      )
+  }
   
   sl_sim <- list(
     summary_week = summary_week,
