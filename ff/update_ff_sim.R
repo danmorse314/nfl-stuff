@@ -423,7 +423,9 @@ if(!is.null(sl_sim$summary_season)){
     ungroup() |>
     mutate(dtupdated = Sys.time(), season = year)
   
-  proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
+  if(nrow(proj.week)>0){
+    proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
+  }
   
 } else {
   # season is over, use final standings
