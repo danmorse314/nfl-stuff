@@ -12,7 +12,7 @@ year <- as.numeric(substr(Sys.Date(),1,4))
 nsims <- 1000
 
 # are schedules released for the sim year?
-actual_schedule <- FALSE
+actual_schedule <- F
 
 # league ID
 #lid <- "999807305069699072"  # 2023
