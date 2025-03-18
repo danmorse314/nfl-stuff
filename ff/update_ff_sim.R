@@ -464,8 +464,12 @@ if(!is.null(sl_sim$summary_season)){
 }
 
 # save projections as longitudinal data
-proj.year.total <- readRDS(paste0("ff/season_simulation_yearly_",year,"_long.rds")) |>
+if(file.exists(paste0("ff/season_simulation_yearly_",year,"_long.rds"))){
+  proj.year.total <- readRDS(paste0("ff/season_simulation_yearly_",year,"_long.rds")) |>
   bind_rows(proj.year)
+} else {
+  proj.year.total <- proj.year
+}
 
 # save
 proj.year |> saveRDS(paste0("ff/season_simulation_yearly_",year,".rds"))
