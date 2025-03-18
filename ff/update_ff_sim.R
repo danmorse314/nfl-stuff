@@ -12,11 +12,12 @@ year <- as.numeric(substr(Sys.Date(),1,4))
 nsims <- 1000
 
 # are schedules released for the sim year?
-actual_schedule <- TRUE
+actual_schedule <- FALSE
 
 # league ID
 #lid <- "999807305069699072"  # 2023
-lid <- "1073536596231753728" # 2024
+#lid <- "1073536596231753728" # 2024
+lid <- "1205299893619404800" # 2025
 
 # keep trade cut values
 #source("update_ktc_values.R")
