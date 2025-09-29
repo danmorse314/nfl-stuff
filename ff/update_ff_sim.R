@@ -86,6 +86,15 @@ rosters <- ffscrapr::ff_rosters(sl_conn) |>
   left_join(user_names, by = "franchise_id") |>
   mutate(user_franchise = glue::glue("{user_name} ({franchise_name})"))
 
+# get starters
+starters <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$league_id}/rosters")) %>%
+  purrr::pluck("content") %>%
+  tibble::tibble() |>
+  tidyr::unnest_wider(1) |>
+  dplyr::select(player_id = starters) |>
+  tidyr::unnest_longer(player_id) |>
+  dplyr::mutate(starter = 1)
+
 # get taxi squad
 taxi_squad <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$league_id}/rosters")) %>%
   purrr::pluck("content") %>%
@@ -107,8 +116,16 @@ injured_reserve <- ffscrapr::sleeper_getendpoint(glue::glue("league/{sl_conn$lea
 rosters <- rosters |>
   dplyr::left_join(taxi_squad, by = "player_id") |>
   dplyr::left_join(injured_reserve, by = "player_id") |>
+  dplyr::left_join(starters, by = "player_id") |>
   dplyr::mutate(taxi = ifelse(is.na(taxi), 0, taxi),
-                ir   = ifelse(is.na(ir),   0, ir))
+                ir   = ifelse(is.na(ir),   0, ir),
+                starter = ifelse(is.na(starter), 0, starter),
+                roster_status = dplyr::case_when(
+                  taxi == 1 ~ "Taxi Squad",
+                  ir == 1 ~ "Injured Reserve",
+                  starter == 1 ~ "Starting Lineup",
+                  TRUE ~ "Bench"
+                ))
 
 # get standings
 ff_st_safe <- purrr::safely(~ffscrapr::ff_standings(sl_conn))
