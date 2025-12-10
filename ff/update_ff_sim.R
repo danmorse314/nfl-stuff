@@ -265,6 +265,9 @@ if(classic_sim){
         points_against,
         potential_points
       )
+
+    summary_week <- NULL
+    summary_simulation <- NULL
   }
   
   sl_sim <- list(
@@ -420,7 +423,8 @@ if(!is.null(sl_sim$summary_season)){
     mutate(dtupdated = Sys.time())
   
   # weekly sims
-  proj.week <- sl_sim$summary_week |>
+  if(!is.null(summary_week)){
+      proj.week <- sl_sim$summary_week |>
     left_join(user_names, by = "franchise_id") |>
     mutate(
       user_franchise = glue::glue("{user_name} ({franchise_name})"),
@@ -440,9 +444,12 @@ if(!is.null(sl_sim$summary_season)){
     ) |>
     ungroup() |>
     mutate(dtupdated = Sys.time(), season = year)
-  
-  if(nrow(proj.week)>0){
-    proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
+
+    if(nrow(proj.week)>0){
+      proj.week |> saveRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
+    }
+  } else {
+    summary_week <- readRDS(paste0("ff/season_simulation_weekly_",year,".rds"))
   }
   
 } else {
