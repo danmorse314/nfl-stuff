@@ -155,7 +155,7 @@ if(classic_sim){
   set.seed(seed)
   
   year.is <- ifelse(
-    between(as.numeric(substr(Sys.Date(), 6,7)), 3, 9),
+    between(as.numeric(substr(Sys.Date(), 6,7)), 1, 9),
     year - 1,
     year
   )
